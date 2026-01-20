@@ -5,7 +5,7 @@
     <script>
         // Check for authentication
         if (sessionStorage.getItem('authToken') !== 'valid-admin-token') {
-            window.location.href = 'login.html';
+            window.location.href = "{{ url_for('admin_login') }}";
         }
     </script>
     <meta charset="UTF-8">
@@ -925,7 +925,7 @@
 
         function logout() {
             sessionStorage.removeItem('authToken');
-            window.location.href = 'login.html';
+            window.location.href = "{{ url_for('admin_login') }}";
         }
 
         // Script to handle Services Management
