@@ -81,9 +81,10 @@ def login_required(f):
 def home():
     db = get_db()
     # Fetch top 3 ACTIVE services and top 3 VISIBLE works for home page
-    services = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC LIMIT 3').fetchall()
-    works = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC LIMIT 3').fetchall()
-    return render_template('index.html', services=services, works=works)
+    services_data = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC LIMIT 3').fetchall()
+    works_data = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC LIMIT 3').fetchall()
+    print(f"DEBUG: Home page fetched {len(services_data)} services and {len(works_data)} works")
+    return render_template('index.html', services=services_data, works=works_data)
 
 @app.route('/about')
 @app.route('/about.html')
@@ -95,8 +96,9 @@ def about():
 def services():
     db = get_db()
     # Fetch all ACTIVE services ordered by 'order'
-    services_list = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
-    return render_template('services.html', services=services_list)
+    services_data = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
+    print(f"DEBUG: Services page fetched {len(services_data)} active services")
+    return render_template('services.html', services=services_data)
 
 @app.route('/works')
 @app.route('/events')
@@ -105,8 +107,9 @@ def services():
 def works():
     db = get_db()
     # Fetch all VISIBLE works ordered by newest first
-    works_list = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
-    return render_template('works.html', works=works_list)
+    works_data = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
+    print(f"DEBUG: Works page fetched {len(works_data)} visible works")
+    return render_template('works.html', works=works_data)
 
 @app.route('/booking')
 @app.route('/booking.html')
@@ -228,8 +231,8 @@ ADD_SERVICE_TEMPLATE = '''
         <div class="mb-3">
             <label class="form-label">Status</label>
             <select name="status" class="form-control">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
             </select>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
