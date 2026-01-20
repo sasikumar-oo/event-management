@@ -33,6 +33,20 @@ def init_db():
                 short_desc TEXT,
                 full_desc TEXT,
                 icon TEXT DEFAULT 'fa-check',
+                status TEXT NOT NULL,
+                "order" INTEGER DEFAULT 0
+            )
+        ''')
+        # Works table
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS works (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                category TEXT,
+                location TEXT,
+                date TEXT,
+                description TEXT,
+                image TEXT,
                 status TEXT NOT NULL
             )
         ''')
@@ -77,8 +91,8 @@ def about():
 def services():
     # Pass services to public template
     db = get_db()
-    # Template expects: service.title, service.icon, service.full_desc, service.short_desc
-    services = db.execute('SELECT * FROM services WHERE status = "Active"').fetchall()
+    # Fetch active services ordered by 'order'
+    services = db.execute('SELECT * FROM services WHERE status = "Active" ORDER BY "order" ASC').fetchall()
     return render_template('services.html', services=services)
 
 @app.route('/works')
@@ -86,8 +100,10 @@ def services():
 @app.route('/events.html')
 @app.route('/works.html')
 def works():
-    # 'events.html' is the portfolio page
-    return render_template('events.html')
+    db = get_db()
+    # Fetch visible works ordered by newest first
+    works = db.execute('SELECT * FROM works WHERE status = "Visible" ORDER BY date DESC').fetchall()
+    return render_template('events.html', works=works)
 
 @app.route('/booking')
 @app.route('/booking.html')
@@ -123,8 +139,33 @@ def admin_logout():
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    # Pass empty lists to avoid template errors if it expects them
-    return render_template('admin/dashboard.html', service_count=0, work_count=0, enquiry_count=0, services=[], works=[], enquiries=[])
+    db = get_db()
+    services = db.execute('SELECT * FROM services').fetchall()
+    # Check if works table exists before querying (defensive)
+    try:
+        works = db.execute('SELECT * FROM works').fetchall()
+    except:
+        works = []
+        
+    service_count = len(services)
+    work_count = len(works)
+    
+    # Enquiries handling (if table exists)
+    enquiry_count = 0
+    enquiries = []
+    try:
+        enquiries = db.execute('SELECT * FROM enquiries').fetchall()
+        enquiry_count = len(enquiries)
+    except:
+        pass
+
+    return render_template('admin/dashboard.html', 
+                           service_count=service_count, 
+                           work_count=work_count, 
+                           enquiry_count=enquiry_count, 
+                           services=services, 
+                           works=works, 
+                           enquiries=enquiries)
 
 # --- Admin Services CRUD (New Requirements) ---
 SERVICES_TEMPLATE = '''

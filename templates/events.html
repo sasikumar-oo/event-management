@@ -63,6 +63,11 @@
                         <p>{{ work.description }}</p>
                     </div>
                 </div>
+                {% else %}
+                <div class="text-center" style="grid-column: 1/-1; padding: 40px; color: var(--color-text-muted);">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+                    <p>No portfolio items yet. Stay tuned for our latest event showcases!</p>
+                </div>
                 {% endfor %}
             </div>
         </div>

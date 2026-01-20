@@ -50,6 +50,11 @@
                     <h3>{{ service.title }}</h3>
                     <p>{{ service.full_desc or service.short_desc }}</p>
                 </div>
+                {% else %}
+                <div class="text-center" style="grid-column: 1/-1; padding: 40px; color: var(--color-text-muted);">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+                    <p>No services available at the moment. Please check back later.</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
