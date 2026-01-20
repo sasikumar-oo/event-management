@@ -58,7 +58,24 @@
                 <p>Our Successfully Completed Events</p>
             </div>
             <div class="events-grid" id="home-works-grid">
-                <!-- Populated by JS -->
+                {% for work in works %}
+                {% set img_url = work.image if work.image.startswith('http') else url_for('static', filename=work.image)
+                %}
+                <div class="event-card">
+                    <div class="event-image" style="background-image: url('{{ img_url }}');"></div>
+                    <div class="event-details">
+                        <h3>{{ work.title }}</h3>
+                        <div class="event-meta"
+                            style="margin-bottom: 15px; color: var(--color-accent); font-size: 0.9rem;">
+                            <span style="margin-right: 15px;"><i class="fas fa-tag"></i> {{ work.category }}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> {{ work.location }}</span>
+                        </div>
+                        <p>{{ work.description }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center" style="grid-column: 1/-1;">No portfolio items to show.</p>
+                {% endfor %}
             </div>
             <div class="text-center" style="margin-top: 40px;">
                 <a href="{{ url_for('works') }}" class="btn btn-primary">View All Works</a>
@@ -74,7 +91,15 @@
                 <p>We specialize in creating unforgettable experiences</p>
             </div>
             <div class="services-grid" id="home-services-grid">
-                <!-- Dynamically populated by JS -->
+                {% for service in services %}
+                <div class="service-card">
+                    <i class="fas {{ service.icon }} service-icon"></i>
+                    <h3>{{ service.title }}</h3>
+                    <p>{{ service.short_desc }}</p>
+                </div>
+                {% else %}
+                <p class="text-center" style="grid-column: 1/-1;">No services to show.</p>
+                {% endfor %}
             </div>
             <div class="text-center" style="margin-top: 40px;">
                 <a href="{{ url_for('services') }}" class="btn btn-primary">View All Services</a>
@@ -125,49 +150,6 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/services-data.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/works-data.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Existing Services Logic
-            const grid = document.getElementById('home-services-grid');
-            if (grid) {
-                const services = ServicesData.getActive().slice(0, 3); // Top 3
-                services.forEach(service => {
-                    const card = document.createElement('div');
-                    card.className = 'service-card';
-                    card.innerHTML = `
-                        <i class="fas ${service.icon} service-icon"></i>
-                        <h3>${service.title}</h3>
-                        <p>${service.shortDesc}</p>
-                     `;
-                    grid.appendChild(card);
-                });
-            }
-
-            // New Works Logic
-            const worksGrid = document.getElementById('home-works-grid');
-            if (worksGrid) {
-                const works = WorksData.getActive().slice(0, 3); // Top 3 Works
-                works.forEach(work => {
-                    const card = document.createElement('div');
-                    card.className = 'event-card'; // Reusing event-card class for styling
-                    card.innerHTML = `
-                        <div class="event-image" style="background-image: url('${work.image}');"></div>
-                        <div class="event-details">
-                            <h3>${work.title}</h3>
-                            <div class="event-meta" style="margin-bottom: 15px; color: var(--color-accent); font-size: 0.9rem;">
-                                <span style="margin-right: 15px;"><i class="fas fa-tag"></i> ${work.category}</span>
-                                <span><i class="fas fa-map-marker-alt"></i> ${work.location}</span>
-                            </div>
-                            <p>${work.description}</p>
-                        </div>
-                    `;
-                    worksGrid.appendChild(card);
-                });
-            }
-        });
-    </script>
     <script src="{{ url_for('static', filename='js/settings-loader.js') }}"></script>
 </body>
 

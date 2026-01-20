@@ -79,7 +79,11 @@ def login_required(f):
 @app.route('/')
 @app.route('/index.html')
 def home():
-    return render_template('index.html')
+    db = get_db()
+    # Fetch top 3 ACTIVE services and top 3 VISIBLE works for home page
+    services = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC LIMIT 3').fetchall()
+    works = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC LIMIT 3').fetchall()
+    return render_template('index.html', services=services, works=works)
 
 @app.route('/about')
 @app.route('/about.html')
