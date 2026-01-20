@@ -7,7 +7,7 @@
     <meta name="description"
         content="Ap Event Management - Turning Your Moments into Memories. Premium event planning services.">
     <title>Ap Event Management | Home</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -17,15 +17,15 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <a href="index.html" class="logo" id="site-name">Ap Events</a>
+            <a href="{{ url_for('home') }}" class="logo" id="site-name">Ap Events</a>
 
             <ul class="nav-links">
-                <li class="nav-item"><a href="index.html" class="active">Home</a></li>
-                <li class="nav-item"><a href="about.html">About</a></li>
-                <li class="nav-item"><a href="services.html">Services</a></li>
-                <li class="nav-item"><a href="events.html">Events</a></li>
-                <li class="nav-item"><a href="booking.html">Booking</a></li>
-                <li class="nav-item"><a href="contact.html">Contact</a></li>
+                <li class="nav-item"><a href="{{ url_for('home') }}" class="active">Home</a></li>
+                <li class="nav-item"><a href="{{ url_for('about') }}">About</a></li>
+                <li class="nav-item"><a href="{{ url_for('services') }}">Services</a></li>
+                <li class="nav-item"><a href="{{ url_for('works') }}">Events</a></li>
+                <li class="nav-item"><a href="{{ url_for('booking') }}">Booking</a></li>
+                <li class="nav-item"><a href="{{ url_for('contact') }}">Contact</a></li>
             </ul>
 
             <div class="hamburger">
@@ -43,8 +43,8 @@
                 <h1 id="site-hero-headline">Turning Your Moments into Memories</h1>
                 <p id="site-hero-subtext">Experience the Pinnacle of Luxury Event Planning</p>
                 <div class="hero-buttons">
-                    <a href="booking.html" class="btn btn-primary">Book an Event</a>
-                    <a href="services.html" class="btn">Our Services</a>
+                    <a href="{{ url_for('booking') }}" class="btn btn-primary">Book an Event</a>
+                    <a href="{{ url_for('services') }}" class="btn">Our Services</a>
                 </div>
             </div>
         </div>
@@ -61,7 +61,7 @@
                 <!-- Populated by JS -->
             </div>
             <div class="text-center" style="margin-top: 40px;">
-                <a href="events.html" class="btn btn-primary">View All Works</a>
+                <a href="{{ url_for('works') }}" class="btn btn-primary">View All Works</a>
             </div>
         </div>
     </section>
@@ -77,7 +77,7 @@
                 <!-- Dynamically populated by JS -->
             </div>
             <div class="text-center" style="margin-top: 40px;">
-                <a href="services.html" class="btn btn-primary">View All Services</a>
+                <a href="{{ url_for('services') }}" class="btn btn-primary">View All Services</a>
             </div>
         </div>
     </section>
@@ -92,10 +92,10 @@
                 </div>
                 <div class="footer-col">
                     <h3>Quick Links</h3>
-                    <a href="about.html">About Us</a>
-                    <a href="services.html">Services</a>
-                    <a href="events.html">Portfolio</a>
-                    <a href="contact.html">Contact</a>
+                    <a href="{{ url_for('about') }}">About Us</a>
+                    <a href="{{ url_for('services') }}">Services</a>
+                    <a href="{{ url_for('works') }}">Portfolio</a>
+                    <a href="{{ url_for('contact') }}">Contact</a>
                 </div>
                 <div class="footer-col">
                     <h3>Contact Us</h3>
@@ -124,9 +124,9 @@
         </div>
     </footer>
 
-    <script src="js/script.js"></script>
-    <script src="js/services-data.js"></script>
-    <script src="js/works-data.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/services-data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/works-data.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Existing Services Logic
@@ -168,7 +168,7 @@
             }
         });
     </script>
-    <script src="js/settings-loader.js"></script>
+    <script src="{{ url_for('static', filename='js/settings-loader.js') }}"></script>
 </body>
 
 </html>
