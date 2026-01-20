@@ -730,6 +730,9 @@
     <script src="{{ url_for('static', filename='js/works-data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/enquiries-data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/services-data.js') }}"></script>
+    <!-- Data for JS initialization -->
+    <script id="services-data" type="application/json">{{ services|tojson|safe if services else '[]' }}</script>
+    <script id="works-data" type="application/json">{{ works|tojson|safe if works else '[]' }}</script>
     <script>
         // ... existing showSection and logout ...
 
@@ -892,11 +895,55 @@
             document.getElementById('enquiry-search').addEventListener('input', renderEnquiriesTable);
         }
 
-        // Initialize
+        // Sync localStorage with database data to ensure consistency on load
+        function syncDatabaseToLocalStorage() {
+            try {
+                const servicesJson = document.getElementById('services-data');
+                const worksJson = document.getElementById('works-data');
+
+                if (!servicesJson || !worksJson) return;
+
+                const flaskServices = JSON.parse(servicesJson.textContent || '[]');
+                const flaskWorks = JSON.parse(worksJson.textContent || '[]');
+
+                if (flaskServices && flaskServices.length > 0) {
+                    const mappedServices = flaskServices.map(s => ({
+                        id: s.id,
+                        title: s.title,
+                        shortDesc: s.short_desc,
+                        fullDesc: s.full_desc,
+                        icon: s.icon,
+                        image: s.image,
+                        active: s.status === 'ACTIVE',
+                        order: s.order
+                    }));
+                    localStorage.setItem('siteServices', JSON.stringify(mappedServices));
+                }
+
+                if (flaskWorks && flaskWorks.length > 0) {
+                    const mappedWorks = flaskWorks.map(w => ({
+                        id: w.id,
+                        title: w.title,
+                        category: w.category,
+                        location: w.location,
+                        date: w.date,
+                        description: w.description,
+                        image: w.image,
+                        active: w.status === 'VISIBLE'
+                    }));
+                    localStorage.setItem('siteWorks', JSON.stringify(mappedWorks));
+                }
+            } catch (e) {
+                console.error("Failed to sync database to localStorage:", e);
+            }
+        }
+
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', () => {
-            renderServicesTable(); // Keep existing
-            renderEnquiriesTable(); // Add this
-            renderWorksTable(); // Add this
+            syncDatabaseToLocalStorage();
+            renderServicesTable();
+            renderEnquiriesTable();
+            renderWorksTable();
         });
 
         function showSection(sectionId) {
@@ -936,15 +983,15 @@
             services.forEach(service => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${service.order}</td>
-                    <td><i class="fas ${service.icon}"></i></td>
-                    <td>${service.title}</td>
-                    <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${service.shortDesc}</td>
-                    <td><span class="status-badge ${service.active ? 'approved' : 'rejected'}">${service.active ? 'Active' : 'Inactive'}</span></td>
-                    <td>
-                        <button class="action-btn" onclick="editService('${service.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="action-btn delete" onclick="deleteService('${service.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
+        <td>${service.order}</td>
+        <td><i class="fas ${service.icon}"></i></td>
+        <td>${service.title}</td>
+        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${service.shortDesc}</td>
+        <td><span class="status-badge ${service.active ? 'approved' : 'rejected'}">${service.active ? 'Active' : 'Inactive'}</span></td>
+        <td>
+            <button class="action-btn" onclick="editService('${service.id}')"><i class="fas fa-edit"></i></button>
+            <button class="action-btn delete" onclick="deleteService('${service.id}')"><i class="fas fa-trash"></i></button>
+        </td>
                 `;
                 servicesTableBody.appendChild(tr);
             });

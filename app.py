@@ -80,10 +80,16 @@ def login_required(f):
 @app.route('/index.html')
 def home():
     db = get_db()
-    # Fetch top 3 ACTIVE services and top 3 VISIBLE works for home page
-    services_data = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC LIMIT 3').fetchall()
-    works_data = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC LIMIT 3').fetchall()
-    print(f"DEBUG: Home page fetched {len(services_data)} services and {len(works_data)} works")
+    # Fetch ALL active/visible records and slice in Python as requested
+    all_services = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
+    all_works = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
+    
+    services_data = all_services[:3]
+    works_data = all_works[:3]
+    
+    print("DEBUG: Home page - Services count:", len(all_services))
+    print("DEBUG: Home page - Works count:", len(all_works))
+    
     return render_template('index.html', services=services_data, works=works_data)
 
 @app.route('/about')
@@ -95,9 +101,9 @@ def about():
 @app.route('/services.html')
 def services():
     db = get_db()
-    # Fetch all ACTIVE services ordered by 'order'
+    # Fetch all ACTIVE services without limit
     services_data = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
-    print(f"DEBUG: Services page fetched {len(services_data)} active services")
+    print("Services count:", len(services_data))
     return render_template('services.html', services=services_data)
 
 @app.route('/works')
@@ -106,9 +112,9 @@ def services():
 @app.route('/works.html')
 def works():
     db = get_db()
-    # Fetch all VISIBLE works ordered by newest first
+    # Fetch all VISIBLE works without limit
     works_data = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
-    print(f"DEBUG: Works page fetched {len(works_data)} visible works")
+    print("Works count:", len(works_data))
     return render_template('works.html', works=works_data)
 
 @app.route('/booking')
