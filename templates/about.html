@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_settings.siteName|default('Ap Event Management') }} | About</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('home') }}" class="logo" id="site-name">{{ site_settings.siteName|default('Ap Events')
+                }}</a>
+            <ul class="nav-links">
+                <li class="nav-item"><a href="{{ url_for('home') }}">Home</a></li>
+                <li class="nav-item"><a href="{{ url_for('about') }}" class="active">About</a></li>
+                <li class="nav-item"><a href="{{ url_for('services') }}">Services</a></li>
+                <li class="nav-item"><a href="{{ url_for('works') }}">Portfolio</a></li>
+                <li class="nav-item"><a href="{{ url_for('booking') }}">Booking</a></li>
+                <li class="nav-item"><a href="{{ url_for('contact') }}">Contact</a></li>
+                <li class="nav-item"><a href="{{ url_for('admin_login') }}">Admin</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero" style="height: 50vh;">
+        <div class="container">
+            <div class="hero-content">
+                <h1>About Us</h1>
+                <p>Creating Memories That Last a Lifetime</p>
+            </div>
+        </div>
+    </header>
+
+    <section class="section-padding">
+        <div class="container">
+            <div class="section-header text-center" style="margin-bottom: 50px;">
+                <h2>Our Story</h2>
+            </div>
+            <div style="max-width: 800px; margin: 0 auto; line-height: 1.8; color: #ccc;">
+                <p style="margin-bottom: 20px;">
+                    Founded in 2015, Ap Event Management started with a simple belief: every event should be a
+                    masterpiece.
+                    What began as a small boutique agency has grown into a premier event planning firm, renowned for
+                    our attention to detail and creative vision.
+                </p>
+                <p style="margin-bottom: 20px;">
+                    Our team of passionate planners, designers, and coordinators work tirelessly to bring your vision to
+                    life.
+                    Whether it's an intimate wedding, a large corporate gala, or a festive private party, we approach
+                    each project
+                    with fresh eyes and dedication.
+                </p>
+                <p>
+                    We believe in the power of celebration to bring people together. Our mission is to take the stress
+                    out of planning
+                    so you can relax and enjoy the moment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3 class="site-name">{{ site_settings.siteName|default('Ap Event Management') }}</h3>
+                    <p id="site-footer-text">{{ site_settings.footerText|default('Creating timeless memories with
+                        elegance and style.') }}</p>
+                </div>
+                <!-- ... footer links (abbreviated, will assume standard layout) -->
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <a href="{{ url_for('about') }}">About Us</a>
+                    <a href="{{ url_for('services') }}">Services</a>
+                    <a href="{{ url_for('works') }}">Portfolio</a>
+                    <a href="{{ url_for('contact') }}">Contact</a>
+                </div>
+                <div class="footer-col">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> <span id="site-address">{{
+                            site_settings.address|default('123 Luxury Lane, Event City') }}</span>
+                    </p>
+                    <p><i class="fas fa-phone"></i> <a href="tel:{{ site_settings.phone }}" id="site-phone-link"
+                            style="color: inherit; text-decoration: none;"><span id="site-phone">{{
+                                site_settings.phone|default('+1 (555) 123-4567') }}</span></a></p>
+                    <p><i class="fas fa-envelope"></i> <a href="mailto:{{ site_settings.email }}" id="site-email-link"
+                            style="color: inherit; text-decoration: none;"><span id="site-email">{{
+                                site_settings.email|default('info@apevents.com') }}</span></a></p>
+                </div>
+                <div class="footer-col">
+                    <h3>Follow Us</h3>
+                    <div class="social-icons">
+                        <a href="#" id="site-facebook" class="site-facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" id="site-instagram" class="site-instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" id="site-twitter" class="site-twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 {{ site_settings.siteName|default('Ap Event Management') }}. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

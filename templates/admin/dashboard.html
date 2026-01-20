@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        // Check for authentication
+        if (sessionStorage.getItem('authToken') !== 'valid-admin-token') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ap Events | Admin Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: var(--color-secondary);
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--color-text-muted);
+            border-radius: 5px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--color-accent);
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            padding: 30px;
+            background-color: var(--color-primary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--color-secondary);
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            color: var(--color-white);
+            font-weight: 700;
+        }
+
+        /* Tables */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--color-secondary);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--color-text-muted);
+        }
+
+        .admin-table th {
+            background-color: rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .admin-table td {
+            font-size: 0.9rem;
+        }
+
+        .admin-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .status-badge.pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .status-badge.approved {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .status-badge.rejected {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--color-text-muted);
+            color: var(--color-text-muted);
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .action-btn.delete:hover {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        /* Forms in Dashboard */
+        .admin-form {
+            background-color: var(--color-secondary);
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 600px;
+        }
+
+        /* Image Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .gallery-item {
+            position: relative;
+            height: 150px;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover img {
+            opacity: 1;
+        }
+
+        .gallery-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+        }
+
+        .gallery-item:hover .gallery-actions {
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--color-text-muted);
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="logo" style="font-size: 1.5rem;">Ap Events</a>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a onclick="showSection('overview')" class="active" id="link-overview"><i
+                            class="fas fa-tachometer-alt"></i> Overview</a></li>
+                <li><a onclick="showSection('works')" id="link-works"><i class="fas fa-briefcase"></i> Works
+                        (Portfolio)</a>
+                </li>
+                <li><a onclick="showSection('website-settings')" id="link-website-settings"><i
+                            class="fas fa-sliders-h"></i> Website Settings</a></li>
+                <li><a onclick="showSection('services-management')" id="link-services-management"><i
+                            class="fas fa-concierge-bell"></i> Services</a></li>
+                <li><a onclick="showSection('enquiries')" id="link-enquiries"><i class="fas fa-envelope"></i>
+                        Enquiries</a></li>
+                <li><a onclick="showSection('bookings')" id="link-bookings"><i class="fas fa-clipboard-list"></i>
+                        Bookings</a></li>
+                <li><a onclick="showSection('gallery')" id="link-gallery"><i class="fas fa-images"></i> Gallery</a></li>
+                <li><a onclick="showSection('settings')" id="link-settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li style="margin-top: auto;"><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i>
+                        Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h2 id="page-title">Overview</h2>
+                <div class="user-info">
+                    <span>Welcome, Admin</span>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <div id="overview" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Events</h3>
+                        <div class="number">12</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Bookings</h3>
+                        <div class="number">156</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Requests</h3>
+                        <div class="number">5</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Revenue (YTD)</h3>
+                        <div class="number">$45,200</div>
+                    </div>
+                </div>
+
+                <h3>Recent Bookings</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Client</th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#1234</td>
+                            <td>Jane Doe</td>
+                            <td>Wedding</td>
+                            <td>2026-10-15</td>
+                            <td><span class="status-badge pending">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1233</td>
+                            <td>Tech Corp</td>
+                            <td>Corporate</td>
+                            <td>2026-11-20</td>
+                            <td><span class="status-badge approved">Approved</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Works Management Section -->
+            <div id="works" class="section">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3>Works of Us (Portfolio)</h3>
+                    <button class="btn btn-primary" onclick="openWorkModal()">+ Add Work</button>
+                </div>
+                <table class="admin-table" id="works-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="works-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Work Modal -->
+            <div id="work-modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+                <div
+                    style="background: var(--color-secondary); margin: 50px auto; padding: 30px; border-radius: 5px; max-width: 600px; position: relative; border: 1px solid var(--color-accent);">
+                    <h3 id="work-modal-title" style="margin-bottom: 20px;">Add Work</h3>
+                    <button onclick="closeWorkModal()"
+                        style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i
+                            class="fas fa-times"></i></button>
+
+                    <form id="work-form" class="admin-form">
+                        <input type="hidden" id="work-id">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="work-title" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="work-category"
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                                <option value="Wedding">Wedding</option>
+                                <option value="Corporate">Corporate</option>
+                                <option value="Social Party">Social Party</option>
+                                <option value="Concert">Concert</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="work-location" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Date Completed</label>
+                            <input type="date" id="work-date" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="work-description" rows="3"
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="text" id="work-image" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group" style="padding-top: 10px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="work-active"
+                                    style="margin-right: 10px; transform: scale(1.5);"> Visible on Website
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save
+                            Work</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Booking Management Section -->
+            <div id="bookings" class="section">
+                <h3>Booking Inquiries</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>john@example.com</td>
+                            <td>Wedding</td>
+                            <td>2025-06-15</td>
+                            <td>Paris</td>
+                            <td><span class="status-badge pending">Pending</span></td>
+                            <td>
+                                <button class="action-btn" title="Approve"><i class="fas fa-check"></i></button>
+                                <button class="action-btn delete" title="Reject"><i class="fas fa-times"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Services Management Section -->
+            <div id="services-management" class="section">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3>Manage Services</h3>
+                    <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
+                </div>
+                <table class="admin-table" id="services-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Icon</th>
+                            <th>Title</th>
+                            <th>Short Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="services-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Service Modal -->
+            <div id="service-modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+                <div
+                    style="background: var(--color-secondary); margin: 50px auto; padding: 30px; border-radius: 5px; max-width: 600px; position: relative; border: 1px solid var(--color-accent);">
+                    <h3 id="modal-title" style="margin-bottom: 20px;">Add Service</h3>
+                    <button onclick="closeServiceModal()"
+                        style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i
+                            class="fas fa-times"></i></button>
+
+                    <form id="service-form" class="admin-form">
+                        <input type="hidden" id="service-id">
+                        <div class="form-group">
+                            <label>Service Title</label>
+                            <input type="text" id="service-title" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Short Description (for cards)</label>
+                            <input type="text" id="service-shortDesc" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Full Description (for details)</label>
+                            <textarea id="service-fullDesc" rows="4"
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Font Awesome Icon Class (e.g. fa-ring)</label>
+                            <input type="text" id="service-icon" required
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="text" id="service-image"
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 20px;">
+                            <div style="flex: 1;">
+                                <label>Display Order</label>
+                                <input type="number" id="service-order" required
+                                    style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                            </div>
+                            <div style="flex: 1; display: flex; align-items: center; padding-top: 25px;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="service-active"
+                                        style="margin-right: 10px; transform: scale(1.5);"> Active
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save
+                            Service</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Enquiries Section -->
+            <div id="enquiries" class="section">
+                <h3>Customer Enquiries</h3>
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <input type="text" id="enquiry-search" placeholder="Search enquiries..."
+                        style="padding: 8px; width: 300px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enquiries-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Enquiry Details Modal -->
+            <div id="enquiry-modal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+                <div
+                    style="background: var(--color-secondary); margin: 50px auto; padding: 30px; border-radius: 5px; max-width: 600px; position: relative; border: 1px solid var(--color-accent);">
+                    <h3 style="margin-bottom: 20px;">Enquiry Details</h3>
+                    <button onclick="closeEnquiryModal()"
+                        style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i
+                            class="fas fa-times"></i></button>
+
+                    <div style="margin-bottom: 15px;">
+                        <span style="color: var(--color-accent);">From:</span> <span id="enq-name"></span> (<span
+                            id="enq-email"></span>)
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <span style="color: var(--color-accent);">Subject:</span> <span id="enq-subject"></span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <span style="color: var(--color-accent);">Date:</span> <span id="enq-date"></span>
+                    </div>
+                    <div
+                        style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                        <p id="enq-message" style="white-space: pre-wrap;"></p>
+                    </div>
+
+                    <button id="btn-mark-read" class="btn btn-primary" style="margin-right: 10px;">Mark as Read</button>
+                    <button id="btn-delete-enq" class="action-btn delete" style="padding: 10px 20px;">Delete</button>
+                </div>
+            </div>
+
+            <!-- Website Settings Section -->
+            <div id="website-settings" class="section">
+                <h3>Website Configuration</h3>
+                <form class="admin-form" id="settings-form">
+                    <div class="form-group">
+                        <label>Website Name</label>
+                        <input type="text" id="setting-siteName"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Hero Headline</label>
+                        <input type="text" id="setting-heroHeadline"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Hero Subtext</label>
+                        <textarea id="setting-heroSubtext" rows="2"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                    </div>
+
+                    <h4 style="margin-top: 20px; margin-bottom: 10px; color: var(--color-accent);">Contact Information
+                    </h4>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" id="setting-phone"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="setting-email"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Office Address</label>
+                        <textarea id="setting-address" rows="2"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Map Embed URL</label>
+                        <input type="text" id="setting-mapUrl"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+
+                    <h4 style="margin-top: 20px; margin-bottom: 10px; color: var(--color-accent);">Footer & Social</h4>
+                    <div class="form-group">
+                        <label>Footer Text</label>
+                        <textarea id="setting-footerText" rows="2"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook URL</label>
+                        <input type="text" id="setting-facebook"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Instagram URL</label>
+                        <input type="text" id="setting-instagram"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Twitter URL</label>
+                        <input type="text" id="setting-twitter"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save Settings</button>
+                    <div id="settings-success" style="display: none; margin-top: 15px; color: #28a745;">Settings saved
+                        successfully!</div>
+                </form>
+            </div>
+
+            <!-- Gallery Management Section -->
+            <div id="gallery" class="section">
+                <div class="upload-area">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                    <p>Click or Drag images here to upload</p>
+                </div>
+
+                <h3>Image Library</h3>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="Event">
+                        <div class="gallery-actions">
+                            <button class="action-btn delete" style="background: rgba(0,0,0,0.7);"><i
+                                    class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                            alt="Event">
+                        <div class="gallery-actions">
+                            <button class="action-btn delete" style="background: rgba(0,0,0,0.7);"><i
+                                    class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="section">
+                <h3>Admin Settings</h3>
+                <form class="admin-form">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password"
+                            style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    </div>
+                    <button type="button" class="btn btn-primary"
+                        onclick="alert('Password updated successfully!')">Change Password</button>
+                </form>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../js/works-data.js"></script>
+    <script src="../js/enquiries-data.js"></script>
+    <script src="../js/services-data.js"></script>
+    <script>
+        // ... existing showSection and logout ...
+
+        // Works Management
+        const worksTableBody = document.getElementById('works-table-body');
+        const workModal = document.getElementById('work-modal');
+        const workForm = document.getElementById('work-form');
+
+        function renderWorksTable() {
+            if (!worksTableBody) return;
+            const works = WorksData.getAll();
+            worksTableBody.innerHTML = '';
+
+            works.forEach(work => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${work.image}" style="width: 50px; height: 30px; object-fit: cover; border-radius: 3px;"></td>
+                    <td>${work.title}</td>
+                    <td>${work.category}</td>
+                    <td>${work.location}</td>
+                    <td><span class="status-badge ${work.active ? 'approved' : 'rejected'}">${work.active ? 'Visible' : 'Hidden'}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="editWork('${work.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="deleteWork('${work.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                worksTableBody.appendChild(tr);
+            });
+        }
+
+        function openWorkModal(id = null) {
+            workModal.style.display = 'block';
+            if (id) {
+                document.getElementById('work-modal-title').innerText = 'Edit Work';
+                const work = WorksData.getById(id);
+                document.getElementById('work-id').value = work.id;
+                document.getElementById('work-title').value = work.title;
+                document.getElementById('work-category').value = work.category;
+                document.getElementById('work-location').value = work.location;
+                document.getElementById('work-date').value = work.date;
+                document.getElementById('work-description').value = work.description;
+                document.getElementById('work-image').value = work.image;
+                document.getElementById('work-active').checked = work.active;
+            } else {
+                document.getElementById('work-modal-title').innerText = 'Add Work';
+                workForm.reset();
+                document.getElementById('work-id').value = '';
+                document.getElementById('work-active').checked = true;
+            }
+        }
+
+        function closeWorkModal() {
+            workModal.style.display = 'none';
+        }
+
+        function editWork(id) {
+            openWorkModal(id);
+        }
+
+        function deleteWork(id) {
+            if (confirm('Delete this work entry?')) {
+                WorksData.delete(id);
+                renderWorksTable();
+            }
+        }
+
+        if (workForm) {
+            workForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const work = {
+                    id: document.getElementById('work-id').value || undefined,
+                    title: document.getElementById('work-title').value,
+                    category: document.getElementById('work-category').value,
+                    location: document.getElementById('work-location').value,
+                    date: document.getElementById('work-date').value,
+                    description: document.getElementById('work-description').value,
+                    image: document.getElementById('work-image').value,
+                    active: document.getElementById('work-active').checked
+                };
+
+                WorksData.save(work);
+                renderWorksTable();
+                closeWorkModal();
+            });
+        }
+
+        // Enquiry Management
+        const enquiriesTableBody = document.getElementById('enquiries-table-body');
+        const enquiryModal = document.getElementById('enquiry-modal');
+        let currentEnquiryId = null;
+
+        function renderEnquiriesTable() {
+            if (!enquiriesTableBody) return;
+            const enquiries = EnquiriesData.getAll();
+            const searchTerm = document.getElementById('enquiry-search') ? document.getElementById('enquiry-search').value.toLowerCase() : '';
+
+            enquiriesTableBody.innerHTML = '';
+
+            enquiries.forEach(enq => {
+                if (searchTerm && !enq.name.toLowerCase().includes(searchTerm) && !enq.subject.toLowerCase().includes(searchTerm)) {
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                const date = new Date(enq.date).toLocaleDateString();
+                tr.innerHTML = `
+                    <td>${date}</td>
+                    <td>${enq.name}</td>
+                    <td>${enq.subject}</td>
+                    <td><span class="status-badge ${enq.status === 'New' ? 'rejected' : 'approved'}">${enq.status}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewEnquiry('${enq.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn delete" onclick="deleteEnquiryTable('${enq.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                enquiriesTableBody.appendChild(tr);
+            });
+        }
+
+        function viewEnquiry(id) {
+            currentEnquiryId = id;
+            const enq = EnquiriesData.getById(id);
+            if (!enq) return;
+
+            document.getElementById('enq-name').textContent = enq.name;
+            document.getElementById('enq-email').textContent = enq.email;
+            document.getElementById('enq-subject').textContent = enq.subject;
+            document.getElementById('enq-date').textContent = new Date(enq.date).toLocaleString();
+            document.getElementById('enq-message').textContent = enq.message;
+
+            enquiryModal.style.display = 'block';
+
+            document.getElementById('btn-mark-read').onclick = () => {
+                EnquiriesData.updateStatus(id, 'Read');
+                renderEnquiriesTable();
+                closeEnquiryModal();
+            };
+
+            document.getElementById('btn-delete-enq').onclick = () => {
+                if (confirm('Delete this enquiry?')) {
+                    EnquiriesData.delete(id);
+                    renderEnquiriesTable();
+                    closeEnquiryModal();
+                }
+            };
+        }
+
+        function closeEnquiryModal() {
+            enquiryModal.style.display = 'none';
+        }
+
+        function deleteEnquiryTable(id) {
+            if (confirm('Delete this enquiry?')) {
+                EnquiriesData.delete(id);
+                renderEnquiriesTable();
+            }
+        }
+
+        if (document.getElementById('enquiry-search')) {
+            document.getElementById('enquiry-search').addEventListener('input', renderEnquiriesTable);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderServicesTable(); // Keep existing
+            renderEnquiriesTable(); // Add this
+            renderWorksTable(); // Add this
+        });
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update active link
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.getElementById('link-' + sectionId).classList.add('active');
+
+            // Update Title
+            document.getElementById('page-title').textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authToken');
+            window.location.href = 'login.html';
+        }
+
+        // Script to handle Services Management
+        const servicesTableBody = document.getElementById('services-table-body');
+        const serviceModal = document.getElementById('service-modal');
+        const serviceForm = document.getElementById('service-form');
+
+        // Function to render services table
+        function renderServicesTable() {
+            if (!servicesTableBody) return;
+            const services = ServicesData.getAll();
+            servicesTableBody.innerHTML = '';
+
+            services.forEach(service => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${service.order}</td>
+                    <td><i class="fas ${service.icon}"></i></td>
+                    <td>${service.title}</td>
+                    <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${service.shortDesc}</td>
+                    <td><span class="status-badge ${service.active ? 'approved' : 'rejected'}">${service.active ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="editService('${service.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="deleteService('${service.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                servicesTableBody.appendChild(tr);
+            });
+        }
+
+        function openServiceModal(id = null) {
+            serviceModal.style.display = 'block';
+            if (id) {
+                document.getElementById('modal-title').innerText = 'Edit Service';
+                const service = ServicesData.getById(id);
+                document.getElementById('service-id').value = service.id;
+                document.getElementById('service-title').value = service.title;
+                document.getElementById('service-shortDesc').value = service.shortDesc;
+                document.getElementById('service-fullDesc').value = service.fullDesc || '';
+                document.getElementById('service-icon').value = service.icon;
+                document.getElementById('service-image').value = service.image || '';
+                document.getElementById('service-order').value = service.order;
+                document.getElementById('service-active').checked = service.active;
+            } else {
+                document.getElementById('modal-title').innerText = 'Add Service';
+                serviceForm.reset();
+                document.getElementById('service-id').value = '';
+                document.getElementById('service-active').checked = true; // Default active
+                document.getElementById('service-order').value = ServicesData.getAll().length + 1; // Default next order
+            }
+        }
+
+        function closeServiceModal() {
+            serviceModal.style.display = 'none';
+        }
+
+        function editService(id) {
+            openServiceModal(id);
+        }
+
+        function deleteService(id) {
+            if (confirm('Are you sure you want to delete this service?')) {
+                ServicesData.delete(id);
+                renderServicesTable();
+            }
+        }
+
+        // Handle Form Submit
+        if (serviceForm) {
+            serviceForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const service = {
+                    id: document.getElementById('service-id').value || undefined,
+                    title: document.getElementById('service-title').value,
+                    shortDesc: document.getElementById('service-shortDesc').value,
+                    fullDesc: document.getElementById('service-fullDesc').value,
+                    icon: document.getElementById('service-icon').value,
+                    image: document.getElementById('service-image').value,
+                    order: parseInt(document.getElementById('service-order').value),
+                    active: document.getElementById('service-active').checked
+                };
+
+                ServicesData.save(service);
+                renderServicesTable();
+                closeServiceModal();
+            });
+        }
+
+        // Initialize Services on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... existing settings code ...
+            renderServicesTable();
+        });
+
+        // Settings Handling
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load existing settings into form
+            const settings = JSON.parse(localStorage.getItem('siteSettings'));
+            if (settings) {
+                if (settings.siteName) document.getElementById('setting-siteName').value = settings.siteName;
+                if (settings.heroHeadline) document.getElementById('setting-heroHeadline').value = settings.heroHeadline;
+                if (settings.heroSubtext) document.getElementById('setting-heroSubtext').value = settings.heroSubtext;
+                if (settings.phone) document.getElementById('setting-phone').value = settings.phone;
+                if (settings.email) document.getElementById('setting-email').value = settings.email;
+                if (settings.address) document.getElementById('setting-address').value = settings.address;
+                if (settings.mapUrl) document.getElementById('setting-mapUrl').value = settings.mapUrl;
+                if (settings.footerText) document.getElementById('setting-footerText').value = settings.footerText;
+                if (settings.facebook) document.getElementById('setting-facebook').value = settings.facebook;
+                if (settings.instagram) document.getElementById('setting-instagram').value = settings.instagram;
+                if (settings.twitter) document.getElementById('setting-twitter').value = settings.twitter;
+            }
+
+            // Save settings
+            const settingsForm = document.getElementById('settings-form');
+            if (settingsForm) {
+                settingsForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+
+                    const newSettings = {
+                        siteName: document.getElementById('setting-siteName').value,
+                        heroHeadline: document.getElementById('setting-heroHeadline').value,
+                        heroSubtext: document.getElementById('setting-heroSubtext').value,
+                        phone: document.getElementById('setting-phone').value,
+                        email: document.getElementById('setting-email').value,
+                        address: document.getElementById('setting-address').value,
+                        mapUrl: document.getElementById('setting-mapUrl').value,
+                        footerText: document.getElementById('setting-footerText').value,
+                        facebook: document.getElementById('setting-facebook').value,
+                        instagram: document.getElementById('setting-instagram').value,
+                        twitter: document.getElementById('setting-twitter').value
+                    };
+
+                    localStorage.setItem('siteSettings', JSON.stringify(newSettings));
+
+                    const successMsg = document.getElementById('settings-success');
+                    successMsg.style.display = 'block';
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 3000);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
