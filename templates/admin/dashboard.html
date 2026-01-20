@@ -308,15 +308,15 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total Events</h3>
-                        <div class="number">12</div>
+                        <div class="number">{{ works_count if works_count is defined else 0 }}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Total Bookings</h3>
-                        <div class="number">156</div>
+                        <div class="number">{{ bookings_count if bookings_count is defined else 0 }}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Pending Requests</h3>
-                        <div class="number">5</div>
+                        <div class="number">{{ enquiries_count if enquiries_count is defined else 0 }}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Revenue (YTD)</h3>
@@ -336,20 +336,21 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if bookings %}
+                        {% for booking in bookings[:5] %}
                         <tr>
-                            <td>#1234</td>
-                            <td>Jane Doe</td>
-                            <td>Wedding</td>
-                            <td>2026-10-15</td>
-                            <td><span class="status-badge pending">Pending</span></td>
+                            <td>#{{ booking.id }}</td>
+                            <td>{{ booking.client_name }}</td>
+                            <td>{{ booking.event_type }}</td>
+                            <td>{{ booking.date }}</td>
+                            <td><span class="status-badge {{ booking.status|lower }}">{{ booking.status }}</span></td>
                         </tr>
+                        {% endfor %}
+                        {% else %}
                         <tr>
-                            <td>#1233</td>
-                            <td>Tech Corp</td>
-                            <td>Corporate</td>
-                            <td>2026-11-20</td>
-                            <td><span class="status-badge approved">Approved</span></td>
+                            <td colspan="5" class="text-center">No recent bookings found.</td>
                         </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -453,18 +454,26 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if bookings %}
+                        {% for booking in bookings %}
                         <tr>
-                            <td>John Doe</td>
-                            <td>john@example.com</td>
-                            <td>Wedding</td>
-                            <td>2025-06-15</td>
-                            <td>Paris</td>
-                            <td><span class="status-badge pending">Pending</span></td>
+                            <td>{{ booking.client_name }}</td>
+                            <td>{{ booking.email }}</td>
+                            <td>{{ booking.event_type }}</td>
+                            <td>{{ booking.date }}</td>
+                            <td>{{ booking.location }}</td>
+                            <td><span class="status-badge {{ booking.status|lower }}">{{ booking.status }}</span></td>
                             <td>
                                 <button class="action-btn" title="Approve"><i class="fas fa-check"></i></button>
                                 <button class="action-btn delete" title="Reject"><i class="fas fa-times"></i></button>
                             </td>
                         </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No bookings found.</td>
+                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -733,6 +742,8 @@
     <!-- Data for JS initialization -->
     <script id="services-data" type="application/json">{{ services|tojson|safe if services else '[]' }}</script>
     <script id="works-data" type="application/json">{{ works|tojson|safe if works else '[]' }}</script>
+    <script id="enquiries-data" type="application/json">{{ enquiries|tojson|safe if enquiries else '[]' }}</script>
+    <script id="bookings-data" type="application/json">{{ bookings|tojson|safe if bookings else '[]' }}</script>
     <script>
         // ... existing showSection and logout ...
 
@@ -932,6 +943,32 @@
                         active: w.status === 'VISIBLE'
                     }));
                     localStorage.setItem('siteWorks', JSON.stringify(mappedWorks));
+                }
+
+                const enquiriesJson = document.getElementById('enquiries-data');
+                const bookingsJson = document.getElementById('bookings-data');
+
+                if (enquiriesJson) {
+                    const flaskEnquiries = JSON.parse(enquiriesJson.textContent || '[]');
+                    if (flaskEnquiries && flaskEnquiries.length > 0) {
+                        const mappedEnquiries = flaskEnquiries.map(e => ({
+                            id: e.id,
+                            name: e.name,
+                            email: e.email,
+                            subject: e.subject,
+                            message: e.message,
+                            date: e.date,
+                            status: e.status
+                        }));
+                        localStorage.setItem('siteEnquiries', JSON.stringify(mappedEnquiries));
+                    }
+                }
+
+                if (bookingsJson) {
+                    const flaskBookings = JSON.parse(bookingsJson.textContent || '[]');
+                    if (flaskBookings && flaskBookings.length > 0) {
+                        localStorage.setItem('siteBookings', JSON.stringify(flaskBookings));
+                    }
                 }
             } catch (e) {
                 console.error("Failed to sync database to localStorage:", e);

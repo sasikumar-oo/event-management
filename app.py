@@ -151,33 +151,59 @@ def admin_logout():
 @app.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    db = get_db()
-    services = db.execute('SELECT * FROM services').fetchall()
-    # Check if works table exists before querying (defensive)
     try:
-        works = db.execute('SELECT * FROM works').fetchall()
-    except:
-        works = []
+        db = get_db()
+        # Fetch data and convert to dict for JSON serialization safety in templates
+        services_rows = db.execute('SELECT * FROM services').fetchall()
+        services = [dict(row) for row in services_rows]
         
-    service_count = len(services)
-    work_count = len(works)
-    
-    # Enquiries handling (if table exists)
-    enquiry_count = 0
-    enquiries = []
-    try:
-        enquiries = db.execute('SELECT * FROM enquiries').fetchall()
-        enquiry_count = len(enquiries)
-    except:
-        pass
+        # Defensive fetching for works
+        try:
+            works_rows = db.execute('SELECT * FROM works').fetchall()
+            works = [dict(row) for row in works_rows]
+        except Exception as e:
+            print("DASHBOARD DEBUG: Works query failed:", e)
+            works = []
+            
+        # Count logic
+        services_count = len(services)
+        works_count = len(works)
+        
+        # Enquiries handling
+        enquiries_count = 0
+        enquiries = []
+        try:
+            enquiries_rows = db.execute('SELECT * FROM enquiries').fetchall()
+            enquiries = [dict(row) for row in enquiries_rows]
+            enquiries_count = len(enquiries)
+        except Exception as e:
+            print("DASHBOARD DEBUG: Enquiries query failed:", e)
+            
+        # Bookings handling
+        bookings_count = 0
+        bookings = []
+        try:
+            bookings_rows = db.execute('SELECT * FROM bookings').fetchall()
+            bookings = [dict(row) for row in bookings_rows]
+            bookings_count = len(bookings)
+        except Exception as e:
+            print("DASHBOARD DEBUG: Bookings query failed:", e)
 
-    return render_template('admin/dashboard.html', 
-                           service_count=service_count, 
-                           work_count=work_count, 
-                           enquiry_count=enquiry_count, 
-                           services=services, 
-                           works=works, 
-                           enquiries=enquiries)
+        print(f"DASHBOARD DEBUG: counts - services:{services_count}, works:{works_count}, enquiries:{enquiries_count}, bookings:{bookings_count}")
+
+        return render_template('admin/dashboard.html', 
+                               services_count=services_count, 
+                               works_count=works_count, 
+                               enquiries_count=enquiries_count,
+                               bookings_count=bookings_count,
+                               services=services, 
+                               works=works, 
+                               enquiries=enquiries,
+                               bookings=bookings)
+    except Exception as e:
+        print("DASHBOARD ERROR:", e)
+        raise
+
 
 # --- Admin Services CRUD (New Requirements) ---
 SERVICES_TEMPLATE = '''
