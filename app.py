@@ -89,11 +89,10 @@ def about():
 @app.route('/services')
 @app.route('/services.html')
 def services():
-    # Pass services to public template
     db = get_db()
-    # Fetch active services ordered by 'order'
-    services = db.execute('SELECT * FROM services WHERE status = "Active" ORDER BY "order" ASC').fetchall()
-    return render_template('services.html', services=services)
+    # Fetch all ACTIVE services ordered by 'order'
+    services_list = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
+    return render_template('services.html', services=services_list)
 
 @app.route('/works')
 @app.route('/events')
@@ -101,9 +100,9 @@ def services():
 @app.route('/works.html')
 def works():
     db = get_db()
-    # Fetch visible works ordered by newest first
-    works = db.execute('SELECT * FROM works WHERE status = "Visible" ORDER BY date DESC').fetchall()
-    return render_template('events.html', works=works)
+    # Fetch all VISIBLE works ordered by newest first
+    works_list = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
+    return render_template('works.html', works=works_list)
 
 @app.route('/booking')
 @app.route('/booking.html')

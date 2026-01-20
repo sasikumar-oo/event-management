@@ -48,8 +48,10 @@
             </div>
             <div class="events-grid" id="works-page-grid">
                 {% for work in works %}
+                {% set img_url = work.image if work.image.startswith('http') else url_for('static', filename=work.image)
+                %}
                 <div class="event-card">
-                    <div class="event-image" style="background-image: url('{{ work.image }}');"></div>
+                    <div class="event-image" style="background-image: url('{{ img_url }}');"></div>
                     <div class="event-details">
                         <h3>{{ work.title }}</h3>
                         <div class="event-meta"
