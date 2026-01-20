@@ -2,7 +2,12 @@
 <html lang="en">
 
 <head>
-
+    <script>
+        // Check for authentication
+        if (sessionStorage.getItem('authToken') !== 'valid-admin-token') {
+            window.location.href = "{{ url_for('admin_login') }}";
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ap Events | Admin Dashboard</title>
@@ -919,7 +924,8 @@
         }
 
         function logout() {
-            window.location.href = "{{ url_for('admin_logout') }}";
+            sessionStorage.removeItem('authToken');
+            window.location.href = "{{ url_for('admin_login') }}";
         }
 
         // Script to handle Services Management
