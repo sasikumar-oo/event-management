@@ -20,7 +20,6 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     short_desc = db.Column(db.String(255))
-    full_desc = db.Column(db.Text)
     icon = db.Column(db.String(50))
     image = db.Column(db.String(255))
     status = db.Column(db.String(20), default='ACTIVE') # ACTIVE, INACTIVE
@@ -32,10 +31,9 @@ class Work(db.Model):
     title = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50))
     location = db.Column(db.String(100))
-    date = db.Column(db.String(20))
-    description = db.Column(db.Text)
     image = db.Column(db.String(255))
     status = db.Column(db.String(20), default='VISIBLE') # VISIBLE, HIDDEN
+    created_at = db.Column(db.String(50), default=lambda: datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
 
 class Enquiry(db.Model):
     id = db.Column(db.Integer, primary_key=True)

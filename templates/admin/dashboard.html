@@ -412,14 +412,9 @@
                                 style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                         </div>
                         <div class="form-group">
-                            <label>Date Completed</label>
-                            <input type="date" id="work-date" required
-                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="work-description" rows="3"
-                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
+                            <label>Created At</label>
+                            <input type="text" id="work-createdAt" readonly
+                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #888;">
                         </div>
                         <div class="form-group">
                             <label>Image URL</label>
@@ -522,11 +517,6 @@
                             <label>Short Description (for cards)</label>
                             <input type="text" id="service-shortDesc" required
                                 style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                        </div>
-                        <div class="form-group">
-                            <label>Full Description (for details)</label>
-                            <textarea id="service-fullDesc" rows="4"
-                                style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;"></textarea>
                         </div>
                         <div class="form-group">
                             <label>Font Awesome Icon Class (e.g. fa-ring)</label>
@@ -783,8 +773,7 @@
                 document.getElementById('work-title').value = work.title;
                 document.getElementById('work-category').value = work.category;
                 document.getElementById('work-location').value = work.location;
-                document.getElementById('work-date').value = work.date;
-                document.getElementById('work-description').value = work.description;
+                document.getElementById('work-createdAt').value = work.createdAt || '';
                 document.getElementById('work-image').value = work.image;
                 document.getElementById('work-active').checked = work.active;
             } else {
@@ -818,8 +807,7 @@
                     title: document.getElementById('work-title').value,
                     category: document.getElementById('work-category').value,
                     location: document.getElementById('work-location').value,
-                    date: document.getElementById('work-date').value,
-                    description: document.getElementById('work-description').value,
+                    createdAt: document.getElementById('work-createdAt').value || undefined,
                     image: document.getElementById('work-image').value,
                     active: document.getElementById('work-active').checked
                 };
@@ -937,8 +925,7 @@
                         title: w.title,
                         category: w.category,
                         location: w.location,
-                        date: w.date,
-                        description: w.description,
+                        createdAt: w.created_at,
                         image: w.image,
                         active: w.status === 'VISIBLE'
                     }));
@@ -1042,7 +1029,6 @@
                 document.getElementById('service-id').value = service.id;
                 document.getElementById('service-title').value = service.title;
                 document.getElementById('service-shortDesc').value = service.shortDesc;
-                document.getElementById('service-fullDesc').value = service.fullDesc || '';
                 document.getElementById('service-icon').value = service.icon;
                 document.getElementById('service-image').value = service.image || '';
                 document.getElementById('service-order').value = service.order;
@@ -1079,7 +1065,6 @@
                     id: document.getElementById('service-id').value || undefined,
                     title: document.getElementById('service-title').value,
                     shortDesc: document.getElementById('service-shortDesc').value,
-                    fullDesc: document.getElementById('service-fullDesc').value,
                     icon: document.getElementById('service-icon').value,
                     image: document.getElementById('service-image').value,
                     order: parseInt(document.getElementById('service-order').value),

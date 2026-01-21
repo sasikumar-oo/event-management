@@ -1,0 +1,19 @@
+
+Schema for services:
+  (0, 'id', 'INTEGER', 0, None, 1)
+  (1, 'title', 'TEXT', 1, None, 0)
+  (2, 'short_desc', 'TEXT', 0, None, 0)
+  (3, 'full_desc', 'TEXT', 0, None, 0)
+  (4, 'icon', 'TEXT', 0, "'fa-check'", 0)
+  (5, 'status', 'TEXT', 1, None, 0)
+  (6, 'order', 'INTEGER', 0, '0', 0)
+
+Schema for works:
+  (0, 'id', 'INTEGER', 0, None, 1)
+  (1, 'title', 'TEXT', 1, None, 0)
+  (2, 'category', 'TEXT', 0, None, 0)
+  (3, 'location', 'TEXT', 0, None, 0)
+  (4, 'date', 'TEXT', 0, None, 0)
+  (5, 'description', 'TEXT', 0, None, 0)
+  (6, 'image', 'TEXT', 0, None, 0)
+  (7, 'status', 'TEXT', 1, None, 0)
