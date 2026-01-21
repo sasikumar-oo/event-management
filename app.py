@@ -3,54 +3,35 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, g, flash, render_template_string
 from functools import wraps
 
+from models import db, Service, Work, Enquiry, User, Setting
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key_for_dev')
-DATABASE = 'database.db'
 
-# --- Database Helper ---
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-    return db
+# Absolute path for Render compatibility
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'database.db')
+# Force absolute path as requested for Render
+RENDER_DB_PATH = '/opt/render/project/src/database.db'
+if os.path.exists('/opt/render/project/src'):
+    SQLALCHEMY_DATABASE_URI = f'sqlite:///{RENDER_DB_PATH}'
+else:
+    SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', SQLALCHEMY_DATABASE_URI)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
 
 def init_db():
     with app.app_context():
-        db = get_db()
-        # Services table - Expanded for template compatibility
-        # content: id, title, short_desc, full_desc, icon, status
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                short_desc TEXT,
-                full_desc TEXT,
-                icon TEXT DEFAULT 'fa-check',
-                status TEXT NOT NULL,
-                "order" INTEGER DEFAULT 0
-            )
-        ''')
-        # Works table
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS works (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                category TEXT,
-                location TEXT,
-                date TEXT,
-                description TEXT,
-                image TEXT,
-                status TEXT NOT NULL
-            )
-        ''')
-        db.commit()
+        db.create_all()
+        # Seed admin user if not exists
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin')
+            admin.set_password('admin')
+            db.session.add(admin)
+            db.session.commit()
 
 # --- Context Processor (Template Compatibility) ---
 @app.context_processor
@@ -79,16 +60,9 @@ def login_required(f):
 @app.route('/')
 @app.route('/index.html')
 def home():
-    db = get_db()
-    # Fetch ALL active/visible records and slice in Python as requested
-    all_services = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
-    all_works = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
-    
-    services_data = all_services[:3]
-    works_data = all_works[:3]
-    
-    print("DEBUG: Home page - Services count:", len(all_services))
-    print("DEBUG: Home page - Works count:", len(all_works))
+    # Use EXACT status match as requested
+    services_data = Service.query.filter_by(status='ACTIVE').order_by(Service.order.asc()).limit(3).all()
+    works_data = Work.query.filter_by(status='VISIBLE').order_by(Work.id.desc()).limit(3).all()
     
     return render_template('index.html', services=services_data, works=works_data)
 
@@ -100,10 +74,8 @@ def about():
 @app.route('/services')
 @app.route('/services.html')
 def services():
-    db = get_db()
-    # Fetch all ACTIVE services without limit
-    services_data = db.execute('SELECT * FROM services WHERE status = "ACTIVE" ORDER BY "order" ASC').fetchall()
-    print("Services count:", len(services_data))
+    # Fetch all ACTIVE services without limit, using models
+    services_data = Service.query.filter_by(status='ACTIVE').order_by(Service.order.asc()).all()
     return render_template('services.html', services=services_data)
 
 @app.route('/works')
@@ -111,10 +83,8 @@ def services():
 @app.route('/events.html')
 @app.route('/works.html')
 def works():
-    db = get_db()
-    # Fetch all VISIBLE works without limit
-    works_data = db.execute('SELECT * FROM works WHERE status = "VISIBLE" ORDER BY date DESC').fetchall()
-    print("Works count:", len(works_data))
+    # Fetch all VISIBLE works without limit, using models
+    works_data = Work.query.filter_by(status='VISIBLE').order_by(Work.id.desc()).all()
     return render_template('works.html', works=works_data)
 
 @app.route('/booking')
@@ -152,50 +122,17 @@ def admin_logout():
 @login_required
 def admin_dashboard():
     try:
-        db = get_db()
-        # Fetch data and convert to dict for JSON serialization safety in templates
-        services_rows = db.execute('SELECT * FROM services').fetchall()
-        services = [dict(row) for row in services_rows]
+        services = Service.query.all()
+        works = Work.query.all()
+        enquiries = Enquiry.query.all()
+        # Mock bookings as they aren't fully implemented in models.py yet but used in dashboard
+        bookings = [] 
         
-        # Defensive fetching for works
-        try:
-            works_rows = db.execute('SELECT * FROM works').fetchall()
-            works = [dict(row) for row in works_rows]
-        except Exception as e:
-            print("DASHBOARD DEBUG: Works query failed:", e)
-            works = []
-            
-        # Count logic
-        services_count = len(services)
-        works_count = len(works)
-        
-        # Enquiries handling
-        enquiries_count = 0
-        enquiries = []
-        try:
-            enquiries_rows = db.execute('SELECT * FROM enquiries').fetchall()
-            enquiries = [dict(row) for row in enquiries_rows]
-            enquiries_count = len(enquiries)
-        except Exception as e:
-            print("DASHBOARD DEBUG: Enquiries query failed:", e)
-            
-        # Bookings handling
-        bookings_count = 0
-        bookings = []
-        try:
-            bookings_rows = db.execute('SELECT * FROM bookings').fetchall()
-            bookings = [dict(row) for row in bookings_rows]
-            bookings_count = len(bookings)
-        except Exception as e:
-            print("DASHBOARD DEBUG: Bookings query failed:", e)
-
-        print(f"DASHBOARD DEBUG: counts - services:{services_count}, works:{works_count}, enquiries:{enquiries_count}, bookings:{bookings_count}")
-
         return render_template('admin/dashboard.html', 
-                               services_count=services_count, 
-                               works_count=works_count, 
-                               enquiries_count=enquiries_count,
-                               bookings_count=bookings_count,
+                               services_count=len(services), 
+                               works_count=len(works), 
+                               enquiries_count=len(enquiries),
+                               bookings_count=len(bookings),
                                services=services, 
                                works=works, 
                                enquiries=enquiries,
@@ -276,8 +213,7 @@ ADD_SERVICE_TEMPLATE = '''
 @app.route('/admin/services')
 @login_required
 def admin_services_list():
-    db = get_db()
-    services = db.execute('SELECT * FROM services').fetchall()
+    services = Service.query.all()
     return render_template_string(SERVICES_TEMPLATE, services=services)
 
 @app.route('/admin/services/add', methods=['GET', 'POST'])
@@ -286,31 +222,140 @@ def admin_services_add():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        status = request.form['status']
+        status = request.form['status'] # User said must be ACTIVE (uppercase)
         icon = request.form.get('icon', 'fa-check')
         
-        # Save description to both short and full desc for template compatibility
-        db = get_db()
-        db.execute('INSERT INTO services (title, short_desc, full_desc, icon, status) VALUES (?, ?, ?, ?, ?)',
-                   (title, description, description, icon, status))
-        db.commit()
+        new_service = Service(
+            title=title,
+            short_desc=description,
+            full_desc=description,
+            icon=icon,
+            status=status
+        )
+        db.session.add(new_service)
+        db.session.commit()
         return redirect(url_for('admin_services_list'))
     return render_template_string(ADD_SERVICE_TEMPLATE)
 
 @app.route('/admin/services/delete/<int:id>', methods=['POST'])
 @login_required
 def admin_services_delete(id):
-    db = get_db()
-    db.execute('DELETE FROM services WHERE id = ?', (id,))
-    db.commit()
+    service = Service.query.get_or_404(id)
+    db.session.delete(service)
+    db.session.commit()
     return redirect(url_for('admin_services_list'))
 
-# Ensure DB exists (Deployment compatibility)
-if not os.path.exists(DATABASE):
-    init_db()
+# --- API Routes for Dashboard SPA ---
+@app.route('/api/services', methods=['GET'])
+def api_get_services():
+    services = Service.query.all()
+    return {"services": [
+        {
+            "id": s.id,
+            "title": s.title,
+            "shortDesc": s.short_desc,
+            "fullDesc": s.full_desc,
+            "icon": s.icon,
+            "image": s.image,
+            "active": s.status == 'ACTIVE',
+            "order": s.order,
+            "status": s.status
+        } for s in services
+    ]}
+
+@app.route('/api/services', methods=['POST'])
+@login_required
+def api_save_service():
+    data = request.json
+    service_id = data.get('id')
+    
+    if service_id and str(service_id).startswith('svc_'):
+        # This is a temp ID from the SPA, treat as new
+        service = None
+    elif service_id:
+        service = Service.query.get(service_id)
+    else:
+        service = None
+        
+    if not service:
+        service = Service()
+        db.session.add(service)
+        
+    service.title = data.get('title')
+    service.short_desc = data.get('shortDesc')
+    service.full_desc = data.get('fullDesc')
+    service.icon = data.get('icon')
+    service.image = data.get('image')
+    service.order = data.get('order', 0)
+    service.status = 'ACTIVE' if data.get('active') else 'INACTIVE'
+    
+    db.session.commit()
+    return {"status": "success", "id": service.id}
+
+@app.route('/api/services/<int:id>', methods=['DELETE'])
+@login_required
+def api_delete_service(id):
+    service = Service.query.get_or_404(id)
+    db.session.delete(service)
+    db.session.commit()
+    return {"status": "success"}
+
+@app.route('/api/works', methods=['GET'])
+def api_get_works():
+    works = Work.query.all()
+    return {"works": [
+        {
+            "id": w.id,
+            "title": w.title,
+            "category": w.category,
+            "location": w.location,
+            "date": w.date,
+            "description": w.description,
+            "image": w.image,
+            "active": w.status == 'VISIBLE',
+            "status": w.status
+        } for w in works
+    ]}
+
+@app.route('/api/works', methods=['POST'])
+@login_required
+def api_save_work():
+    data = request.json
+    work_id = data.get('id')
+    
+    if work_id and str(work_id).startswith('work_'):
+        work = None
+    elif work_id:
+        work = Work.query.get(work_id)
+    else:
+        work = None
+        
+    if not work:
+        work = Work()
+        db.session.add(work)
+        
+    work.title = data.get('title')
+    work.category = data.get('category')
+    work.location = data.get('location')
+    work.date = data.get('date')
+    work.description = data.get('description')
+    work.image = data.get('image')
+    work.status = 'VISIBLE' if data.get('active') else 'HIDDEN'
+    
+    db.session.commit()
+    return {"status": "success", "id": work.id}
+
+@app.route('/api/works/<int:id>', methods=['DELETE'])
+@login_required
+def api_delete_work(id):
+    work = Work.query.get_or_404(id)
+    db.session.delete(work)
+    db.session.commit()
+    return {"status": "success"}
+
+# Ensure DB exists
+init_db()
 
 if __name__ == '__main__':
-    if not os.path.exists(DATABASE):
-        init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

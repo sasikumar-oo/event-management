@@ -803,15 +803,15 @@
             openWorkModal(id);
         }
 
-        function deleteWork(id) {
+        async function deleteWork(id) {
             if (confirm('Delete this work entry?')) {
-                WorksData.delete(id);
+                await WorksData.delete(id);
                 renderWorksTable();
             }
         }
 
         if (workForm) {
-            workForm.addEventListener('submit', (e) => {
+            workForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const work = {
                     id: document.getElementById('work-id').value || undefined,
@@ -824,7 +824,7 @@
                     active: document.getElementById('work-active').checked
                 };
 
-                WorksData.save(work);
+                await WorksData.save(work);
                 renderWorksTable();
                 closeWorkModal();
             });
@@ -1064,16 +1064,16 @@
             openServiceModal(id);
         }
 
-        function deleteService(id) {
+        async function deleteService(id) {
             if (confirm('Are you sure you want to delete this service?')) {
-                ServicesData.delete(id);
+                await ServicesData.delete(id);
                 renderServicesTable();
             }
         }
 
         // Handle Form Submit
         if (serviceForm) {
-            serviceForm.addEventListener('submit', (e) => {
+            serviceForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const service = {
                     id: document.getElementById('service-id').value || undefined,
@@ -1086,7 +1086,7 @@
                     active: document.getElementById('service-active').checked
                 };
 
-                ServicesData.save(service);
+                await ServicesData.save(service);
                 renderServicesTable();
                 closeServiceModal();
             });

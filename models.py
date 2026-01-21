@@ -16,24 +16,26 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Service(db.Model):
+    __tablename__ = 'services'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     short_desc = db.Column(db.String(255))
     full_desc = db.Column(db.Text)
     icon = db.Column(db.String(50))
     image = db.Column(db.String(255))
-    active = db.Column(db.Boolean, default=True)
+    status = db.Column(db.String(20), default='ACTIVE') # ACTIVE, INACTIVE
     order = db.Column(db.Integer, default=0)
 
 class Work(db.Model):
+    __tablename__ = 'works'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50))
     location = db.Column(db.String(100))
-    date = db.Column(db.String(20)) # Using string for simplicity in demo
+    date = db.Column(db.String(20))
     description = db.Column(db.Text)
     image = db.Column(db.String(255))
-    active = db.Column(db.Boolean, default=True)
+    status = db.Column(db.String(20), default='VISIBLE') # VISIBLE, HIDDEN
 
 class Enquiry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
