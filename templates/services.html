@@ -48,7 +48,7 @@
                 <div class="service-card">
                     <i class="fas {{ service.icon }} service-icon"></i>
                     <h3>{{ service.title }}</h3>
-                    <p>{{ service.short_desc }}</p>
+                    <p>{{ service.full_desc or service.short_desc }}</p>
                 </div>
                 {% else %}
                 <div class="text-center" style="grid-column: 1/-1; padding: 40px; color: var(--color-text-muted);">

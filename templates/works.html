@@ -62,9 +62,9 @@
                             <span><i class="fas fa-map-marker-alt"></i> {{ work.location }}</span>
                         </div>
                         <div class="event-meta" style="margin-bottom: 10px; color: #ccc; font-size: 0.8rem;">
-                            <span><i class="fas fa-calendar-alt"></i> {{ work.created_at }}</span>
+                            <span><i class="fas fa-calendar-alt"></i> {{ work.date or work.created_at }}</span>
                         </div>
-                        <p>{{ work.title }}</p>
+                        <p>{{ work.description or work.title }}</p>
                     </div>
                 </div>
                 {% else %}

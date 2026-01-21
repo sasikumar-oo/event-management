@@ -228,6 +228,7 @@ def admin_services_add():
         new_service = Service(
             title=title,
             short_desc=description,
+            full_desc=description,
             icon=icon,
             status=status
         )
@@ -253,6 +254,7 @@ def api_get_services():
             "id": s.id,
             "title": s.title,
             "shortDesc": s.short_desc,
+            "fullDesc": s.full_desc,
             "icon": s.icon,
             "image": s.image,
             "active": s.status == 'ACTIVE',
@@ -281,6 +283,7 @@ def api_save_service():
         
     service.title = data.get('title')
     service.short_desc = data.get('shortDesc')
+    service.full_desc = data.get('fullDesc')
     service.icon = data.get('icon')
     service.image = data.get('image')
     service.order = data.get('order', 0)
@@ -306,10 +309,11 @@ def api_get_works():
             "title": w.title,
             "category": w.category,
             "location": w.location,
+            "date": w.date,
+            "description": w.description,
             "image": w.image,
             "active": w.status == 'VISIBLE',
-            "status": w.status,
-            "createdAt": w.created_at
+            "status": w.status
         } for w in works
     ]}
 
@@ -333,10 +337,10 @@ def api_save_work():
     work.title = data.get('title')
     work.category = data.get('category')
     work.location = data.get('location')
+    work.date = data.get('date')
+    work.description = data.get('description')
     work.image = data.get('image')
     work.status = 'VISIBLE' if data.get('active') else 'HIDDEN'
-    if data.get('createdAt'):
-        work.created_at = data.get('createdAt')
     
     db.session.commit()
     return {"status": "success", "id": work.id}
